@@ -3,9 +3,9 @@
     <CropType>3</CropType>
     <CalendarType>2</CalendarType>
     <SwitchGDD>1</SwitchGDD>
-    <PlantingDate>10/03</PlantingDate>
-    <HarvestDate>30/06</HarvestDate>
-    <Emergence>80</Emergence>
+    <PlantingDate>27/03</PlantingDate>
+    <HarvestDate>31/05</HarvestDate>
+    <Emergence>50</Emergence>
     <MaxRooting>1409</MaxRooting>
     <Senescence>1400</Senescence>
     <Maturity>1469</Maturity>

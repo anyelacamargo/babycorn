@@ -2,11 +2,11 @@
 <table>
    <tr>
     <LayerNo>1</LayerNo>
-    <LayerThickness>4.0</LayerThickness>
-    <thS>0.46</thS>
-    <thFC>0.31</thFC>
-    <thWP>0.15</thWP>
-    <Ksat>500.00</Ksat>
+    <LayerThickness>1.5</LayerThickness>
+    <thS>0.41</thS>
+    <thFC>0.22</thFC>
+    <thWP>0.10</thWP>
+    <Ksat>1200.00</Ksat>
    </tr>
 </table>
 

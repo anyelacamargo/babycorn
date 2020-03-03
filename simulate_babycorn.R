@@ -48,9 +48,15 @@ get_weather_data <- function(fname){
     strsplit(ChangeDateFormat(c('YEAR' = sdata$YEAR[x], 
                                 'DOY' = sdata$DOY[x])), '-')[[1]][3]))
   evp = as.numeric(sapply(1:nrow(sdata), function(x)
-      get_Eto(c(sdata$T2M_MAX[x], sdata$T2M_MIN[x], sdata$ALLSKY_SFC_SW_DWN[x], 
-                sdata$WS2M[x], sdata$T2MDEW[x], 
-                sdata$altitude[x]))))
+      get_Eto(list('Tmax'  = sdata$T2M_MAX[x], 
+                'Tmin'  = sdata$T2M_MIN[x], 
+                'rs' = sdata$ALLSKY_SFC_SW_DWN[x], 
+                'Wind' = sdata$WS2M[x], 
+                'Tdew' = sdata$T2MDEW[x], 
+                'altitude' = sdata$altitude[x],
+                'lat' = sdata[['LAT']][x],
+                'hemis' = 'N',
+                'DOY' = sdata[['DOY']][x]))))
   
   w <- data.frame(day, month, year = sdata$YEAR, mintp = sdata$T2M_MIN,
                   mxntp = sdata$T2M_MAX, p = sdata$PRECTOT, evp)
@@ -63,9 +69,10 @@ get_weather_data <- function(fname){
   
 }
 
-    weather_raw <- 'Weather_babycorn_raw.csv'
-    write.csv(get_weather_data(weather_raw), 
-                'input_babycorn/weather_babycorn.csv', row.names = FALSE)
+
+    #weather_raw <- 'Weather_babycorn_raw.csv'
+    #write.csv(get_weather_data(weather_raw), 
+     #           'input_babycorn/weather_babycorn.csv', row.names = FALSE)
  
     folder_name <- 'input_babycorn'
     FileLocation = ReadFileLocations(paste(folder_name,'/', 'filesetup.xml', 
@@ -124,4 +131,5 @@ get_weather_data <- function(fname){
     # tiff('Fig1.tiff', width  = 800, height = 800, res=200)
     # plot_scatter(od$Yield[-i], as.numeric(u$Yield)[c(-i,-34 )])
     # dev.off()
+    print(u$Yield)
     

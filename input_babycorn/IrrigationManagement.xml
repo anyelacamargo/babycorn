@@ -3,7 +3,7 @@
 	<IrrSchFilename>IrrigationSchedule.xml</IrrSchFilename>
 	<IrrMethod>1</IrrMethod>
 	<IrrInterval>3</IrrInterval>
-	<SMT1>40</SMT1>
+	<SMT1>50</SMT1>
 	<SMT2>40</SMT2>
 	<SMT3>40</SMT3>
 	<SMT4>40</SMT4>
