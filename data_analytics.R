@@ -8,6 +8,58 @@ library(glmnet)
 library(e1071)
 library(xgboost)
 
+
+parm_search_xgboost <- function(dtrain){
+  
+  
+  
+  searchGridSubCol <- expand.grid(subsample = c(0.5, 0.75, 1), 
+                                  colsample_bytree = c(0.6, 0.8, 1),
+                                  lambda = seq(0, 1, by = 0.5),
+                                  lambda_bias = seq(0, 1, by = 0.5),
+                                  alpha = seq(0, 1, by = 0.5),
+                                  eta = seq(0, 1, by = 0.1))
+  ntrees <- 100
+  
+  rmseErrorsHyperparameters <- apply(searchGridSubCol, 1, function(parameterList){
+    
+    #Extract Parameters to test
+    currentSubsampleRate <- parameterList[["subsample"]]
+    currentColsampleRate <- parameterList[["colsample_bytree"]]
+    lambda <- parameterList[["lambda"]]
+    lambda_bias <- parameterList[["lambda_bias"]]
+    alpha <- parameterList[["alpha"]]
+    eta <- parameterList[["eta"]]
+    
+    xgboostModelCV <- xgb.cv(data =  dtrain, nrounds = ntrees, nfold = 5, 
+                             showsd = TRUE, 
+                             metrics = "rmse", verbose = FALSE, "eval_metric" = "rmse",
+                             "objective" = "reg:linear", 'booster' = "gblinear",
+                             "max.depth" = 15,                                
+                             "subsample" = currentSubsampleRate, 
+                             "colsample_bytree" = currentColsampleRate,
+                             'lambda' = lambda,
+                             'lambda_bias' = lambda_bias,
+                             'alpha' = alpha, 'eta' = eta)
+    
+    xvalidationScores <- data.frame(xgboostModelCV$evaluation_log)
+    #print(xvalidationScores)
+    #Save rmse of the last iteration
+    rmse <- tail(xvalidationScores$test_rmse_mean, 1)
+    
+    return(c(rmse, currentSubsampleRate, currentColsampleRate, lambda, 
+             lambda_bias, alpha, eta))
+    
+  })
+  
+  return(rmseErrorsHyperparameters[,which(rmseErrorsHyperparameters[1,] == 
+                                     min(rmseErrorsHyperparameters[1,]))])
+  
+  
+}
+
+
+
 run_gboosting <- function(sdata, class_name, descriptor_list){
   
   
@@ -21,54 +73,13 @@ run_gboosting <- function(sdata, class_name, descriptor_list){
     train_data <- subdata[index, ]
     test_data  <- subdata[-index, ]
     
-    dtrain <- xgb.DMatrix(data=as.matrix(train_data[, -match(class_name, colnames(train_data))]),
+    dtrain <- xgb.DMatrix(data=as.matrix(train_data[, -match(class_name, 
+                                                             colnames(train_data))]),
                           label=train_data$UPYLD, missing=NA)
     
-    dtest <- xgb.DMatrix(data=as.matrix(test_data[, -match(class_name, colnames(test_data))]),
+    dtest <- xgb.DMatrix(data=as.matrix(test_data[, -match(class_name, 
+                                                           colnames(test_data))]),
                          label=test_data$UPYLD, missing=NA)
-    
-    #foldsCV <- createFolds(train_data$UPYLD, k=15, list=TRUE, returnTrain=FALSE) 
-    
-    searchGridSubCol <- expand.grid(subsample = c(0.5, 0.75, 1), 
-                                    colsample_bytree = c(0.6, 0.8, 1),
-                                    lambda = seq(0, 1, by = 0.5),
-                                    lambda_bias = seq(0, 1, by = 0.5),
-                                    alpha = seq(0, 1, by = 0.5),
-                                    eta = seq(0, 1, by = 0.01))
-    ntrees <- 100
-    
-    rmseErrorsHyperparameters <- apply(searchGridSubCol, 1, function(parameterList){
-    
-      #Extract Parameters to test
-      currentSubsampleRate <- parameterList[["subsample"]]
-      currentColsampleRate <- parameterList[["colsample_bytree"]]
-      lambda <- parameterList[["lambda"]]
-      lambda_bias <- parameterList[["lambda_bias"]]
-      alpha <- parameterList[["alpha"]]
-      eta <- parameterList[["eta"]]
-      
-      xgboostModelCV <- xgb.cv(data =  dtrain, nrounds = ntrees, nfold = 5, 
-                               showsd = TRUE, 
-                               metrics = "rmse", verbose = FALSE, "eval_metric" = "rmse",
-                               "objective" = "reg:linear", 'booster' = "gblinear",
-                               "max.depth" = 15,                                
-                               "subsample" = currentSubsampleRate, 
-                               "colsample_bytree" = currentColsampleRate,
-                               'lambda' = lambda,
-                               'lambda_bias' = lambda_bias,
-                               'alpha' = alpha, 'eta' = eta)
-      
-      xvalidationScores <- data.frame(xgboostModelCV$evaluation_log)
-      #print(xvalidationScores)
-      #Save rmse of the last iteration
-      rmse <- tail(xvalidationScores$test_rmse_mean, 1)
-      
-      return(c(rmse, currentSubsampleRate, currentColsampleRate, lambda, 
-               lambda_bias, alpha, eta))
-      
-    })
-    
-    rmseErrorsHyperparameters[,which(rmseErrorsHyperparameters[1,] == min(rmseErrorsHyperparameters[1,]))]
     
     param <- list(booster = "gblinear", 
                   objective = "reg:linear", 
@@ -116,10 +127,6 @@ run_gboosting <- function(sdata, class_name, descriptor_list){
   
   
 }
-
-
-
-
 
 
 tune_svm <- function(sdata, f){
